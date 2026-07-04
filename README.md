@@ -1,128 +1,180 @@
 # 🎓 HSB Smart Registration & Academic RAG System
 
-![MERN Stack](https://img.shields.io/badge/Stack-MERN-blue)
-![AI Powered](https://img.shields.io/badge/AI-Google_Gemini-orange)
-![Database](https://img.shields.io/badge/Database-MongoDB_Vector_Search-green)
-![Security](https://img.shields.io/badge/Security-httpOnly_Cookies-red)
-![Architecture](https://img.shields.io/badge/Architecture-Service_Oriented-purple)
+![Node.js](https://img.shields.io/badge/Node.js-≥20.19-339933?style=flat-square&logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express-5.2.1-000000?style=flat-square&logo=express&logoColor=white)
+![React](https://img.shields.io/badge/React-19.2.6-61DAFB?style=flat-square&logo=react&logoColor=black)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=flat-square&logo=vite&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-Atlas%20%2B%20Vector%20Search-47A248?style=flat-square&logo=mongodb&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.3.1-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)
+![JWT](https://img.shields.io/badge/Auth-JWT%20%2B%20httpOnly%20Cookie-black?style=flat-square&logo=jsonwebtokens)
+![Google Gemini](https://img.shields.io/badge/AI-Google%20Generative%20AI-4285F4?style=flat-square&logo=google&logoColor=white)
 
-An intelligent, AI-driven full-stack academic platform engineered for **Hochschule Bremen (HSB)**. This system transcends traditional CRUD applications by orchestrating advanced Large Language Models (LLMs), Retrieval-Augmented Generation (RAG), and Vector Search to fully automate student course scheduling, knowledge retrieval, and administrative data entry.
-
----
-
-## 🚀 Key Features & Innovations
-
-### 🧠 1. Intelligent AI Schedule Builder
-* **Semantic Constraint Parsing:** Students input complex natural language queries (e.g., *"I want 3 software courses in English, but no classes on Friday"*). The AI parses this into exact JSON constraints.
-* **Vector Similarity Search:** Uses **MongoDB Atlas Vector Search** to mathematically match student prompts with semantically similar course embeddings.
-* **Algorithmic Conflict Resolution:** A custom conflict-detection engine processes the vector results against the user's constraints and schedule, silently filtering out time collisions and outputting a perfectly aligned timetable.
-
-### 🤖 2. Institutional Chatbot (RAG Architecture)
-* **Zero Hallucination Policy:** The chatbot is strictly constrained using **Retrieval-Augmented Generation (RAG)**. It only answers questions based on a localized, vectorized knowledge base scraped directly from the official HSB website.
-* **Automated Knowledge Refresh:** Integrated **Cron Jobs** (`node-cron`) automatically scrape and re-vectorize targeted URLs on a schedule, ensuring the LLM is always querying the most up-to-date institutional data.
-
-### 📄 3. Admin AI Workflow (PDF Syllabus Extraction)
-* **Automated Data Pipeline:** Admins upload unstructured PDF course syllabi. The system leverages `gemini-1.5-flash` with strict Prompt Engineering to enforce structured JSON array outputs.
-* **Human-in-the-Loop (HITL):** Before persistence, the AI output is held in a draft state, allowing administrators to review, amend, and append scheduling parameters, ensuring 100% data integrity.
-
-### 🛡️ 4. Enterprise-Grade Robustness & Security
-* **Graceful Degradation:** The AI service layer implements rigorous **Fallback Mechanisms** and **Exponential Backoff Auto-Retries**. If third-party AI APIs (like Google's) experience high traffic (503/429 errors), the system safely falls back to standard queries without crashing the UI.
-* **Hardened Security:** Built with robust RBAC (Role-Based Access Control). Authentication is secured via `bcrypt` hashing and stateless `JWT` tokens stored exclusively in **httpOnly, SameSite strict cookies** to prevent XSS attacks.
+An intelligent, AI-driven full-stack academic platform. This system transcends traditional CRUD applications by orchestrating advanced Large Language Models (LLMs), Retrieval-Augmented Generation (RAG), and Vector Search to fully automate student course scheduling, knowledge retrieval, and administrative data entry.
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+## 📖 Project Description
 
-### Frontend (Client-Side)
-* **Framework:** React.js (Vite)
-* **Styling:** Tailwind CSS (Responsive, Modern UI)
-* **State Management:** React Context API
-* **Routing & Protection:** `react-router-dom` with custom Protected Routes for Admin/Student isolation.
-* **HTTP Client:** Axios (configured for automatic cookie inclusion).
+This repository contains a robust two-tier application:
 
-### Backend (Server-Side)
-* **Runtime Environment:** Node.js
-* **Framework:** Express.js
-* **AI Provider:** Google Gemini API (`gemini-1.5-flash` for generation/parsing, `embedding-001` for vectors).
-* **Automation:** Node Cron (for scheduled web scraping), Puppeteer/Cheerio (for DOM parsing).
-* **File Handling:** Multer (for PDF buffer processing).
-
-### Database & Storage
-* **Primary Database:** MongoDB Atlas
-* **ORM:** Mongoose
-* **Search Engine:** `$vectorSearch` aggregation pipeline.
+- **`backend/`** — A Node.js/Express REST API that handles authentication, course catalog management, AI-driven course suggestions, a RAG chatbot, PDF syllabus ingestion, and scheduled/manual website scraping.
+- **`frontend/`** — A React 19 single-page application (Vite + Tailwind CSS) providing a public landing page, authentication screens, a student portal (AI assistant + manual catalog + weekly timetable), an admin dashboard, and a floating chatbot widget.
 
 ---
 
-## 📂 System Architecture Overview
+## 🎯 Business Problem & Solution
 
-The backend is built using a clean, **Service-Oriented Architecture (SOA)** to keep controllers lean and business logic testable:
+**The Problem:**
+Students face a manual, error-prone process for selecting courses: cross-referencing PDFs, checking for time-slot conflicts by hand, and searching for scattered institutional information. Administrators lack an efficient way to digitize syllabus PDFs into structured data and keep chatbot knowledge bases current.
 
-```text
-📦 backend
- ┣ 📂 src
- ┃ ┣ 📂 controllers    # Request/Response handling (Admin, Student, Auth)
- ┃ ┣ 📂 models         # Mongoose Schemas (Course, User, ScrapeTarget)
- ┃ ┣ 📂 routes         # Express routing definitions
- ┃ ┣ 📂 services       # Heavy lifting logic:
- ┃ ┃ ┣ 📜 aiService.js   # LLM interaction, Prompt Engineering, Vectorization
- ┃ ┃ ┗ 📜 cronService.js # Automated web scraping orchestration
- ┃ ┣ 📂 utils          # Helper functions (Error handling, Hashers)
- ┃ ┗ 📜 server.js      # Entry point & Middleware configuration
-⚡ Engineering Challenges Solved
-Handling API Rate Limits (503 Service Unavailable):
+**The Solution:**
+* **AI Course Scheduling:** Students describe preferences in natural language. The backend parses constraints, embeds the query, performs a vector search over the `Course` collection, and returns a constraint-filtered, conflict-free schedule.
+* **RAG Chatbot:** Students ask questions; the backend embeds the question, performs a vector search over scraped `UniversityData`, and asks Gemini to answer strictly from that retrieved context.
+* **Admin AI Workflow:** A Gemini multimodal pipeline reads uploaded syllabus PDFs directly and returns structured course drafts for admins to review.
+* **Automated Scraping Pipeline:** A robust `cron` scheduler extracts text from configured URLs, embeds it, and stores it for the chatbot.
 
-Challenge: Cloud AI providers frequently throttle free-tier or high-demand connections, causing frontend crashes.
+---
 
-Solution: Architected a self-healing retry loop inside aiService.js that catches HTTP 503 errors, waits asynchronously, and retries. If the service completely fails, it triggers a safe default JSON object to maintain operational continuity.
+## ⚙️ Tech Stack
 
-Preventing Empty Vector Crashes:
+### Frontend
+- **React 19.2.6** + **React Router DOM 7.18.1**
+- **Vite 8** (Lightning-fast dev server & bundler)
+- **Tailwind CSS 4.3.1** (Modern utility-first styling)
+- **react-hot-toast** (Elegant UX feedback)
+- **Axios** (Configured for secure `httpOnly` cookie transmission)
 
-Challenge: If a user prompt only contained constraints (e.g., "No Monday classes") with no specific topic, the AI parser returned an empty semantic string, causing the embedding model to throw a 400 Bad Request.
+### Backend
+- **Node.js** + **Express 5.2.1**
+- **Mongoose 9.7.0** (MongoDB ODM)
+- **Security:** `jsonwebtoken` (JWT), `bcrypt` (Hashing), `cors`, `cookie-parser`
+- **AI Integration:** `@google/generative-ai` SDK (`gemini-1.5-flash` & `embedding-001`)
+- **Automation:** `node-cron`, `axios`, `cheerio` (Web scraping)
+- **File Handling:** `multer` (In-memory PDF processing)
 
-Solution: Implemented conditional runtime logic to detect empty semantic returns and dynamically inject the raw student query as a fallback embedding string.
+### Database
+- **MongoDB Atlas**
+- **Atlas Vector Search** (`$vectorSearch` aggregation stage) for semantic matching.
 
-⚙️ Getting Started (Local Development)
-Prerequisites
-Node.js (v18+)
+---
 
-MongoDB Atlas Cluster (with Vector Search index configured on the courses collection)
+## 🏗️ System Architecture
 
-Google Gemini API Key
+The application follows a clean, three-tier Service-Oriented Architecture (SOA):
 
-Installation
-Clone the repository
+~~~mermaid
+graph TB
+    A["React 19 SPA<br/>Vite + Tailwind CSS v4"]
 
-Bash
-git clone [https://github.com/yourusername/hsb-smart-system.git](https://github.com/yourusername/hsb-smart-system.git)
-Backend Setup
+    subgraph Server["Node.js / Express API — app.js"]
+        C["Auth Routes<br/>/api/auth"]
+        D["Admin Routes<br/>/api/admin"]
+        E["Student Routes<br/>/api/student"]
+        F["authMiddleware<br/>protect + authorize"]
+        G["Controllers"]
+        H["Services Layer<br/>aiService / cronService / scraperService"]
+        N["node-cron scheduler<br/>weekly background jobs"]
+    end
 
-Bash
-cd backend
-npm install
-Create a .env file in the backend directory:
+    I[("MongoDB Atlas<br/>+ Vector Search")]
+    J["Google Generative AI<br/>Gemini API"]
+    K["Public Websites<br/>scraped via Axios + Cheerio"]
 
-Code-Snippet
-PORT=5000
-MONGODB_URI=your_mongo_atlas_connection_string
-JWT_SECRET=your_super_secret_key
-GEMINI_API_KEY=your_google_api_key
-NODE_ENV=development
-Start the server:
+    A -- "Axios, withCredentials,<br/>JWT httpOnly cookie" --> C
+    A --> D
+    A --> E
+    C --> F
+    D --> F
+    E --> F
+    F --> G
+    G --> H
+    N --> H
+    H --> I
+    H --> J
+    H --> K
+~~~
 
-Bash
-npm run dev
-Frontend Setup
+### AI Course-Suggestion Flow
 
-Bash
-cd frontend
-npm install
-npm run dev
-👤 Author
-Nawras Alkhrissat
+~~~mermaid
+sequenceDiagram
+    participant S as Student
+    participant FE as StudentPortal.jsx
+    participant API as POST /api/student/suggest-courses
+    participant AI as aiService (Gemini)
+    participant DB as MongoDB (Course collection)
 
-Software Engineer | CS Student at HSB
+    S->>FE: Enter natural-language request
+    FE->>API: {studentQuery}
+    API->>AI: parseStudentQuery(studentQuery)
+    AI-->>API: {semanticQuery, constraints}
+    API->>AI: generateEmbedding(semanticQuery)
+    AI-->>API: embedding vector
+    API->>DB: $vectorSearch on Course.embedding
+    DB-->>API: Candidate courses ranked by similarity
+    API->>API: Filter by maxCourses, avoidDays, preferredLanguage, time conflicts
+    API-->>FE: {aiAnalysis, finalSchedule, ignoredCoursesDetails}
+    FE-->>S: Render weekly timetable + excluded courses
+~~~
 
-LinkedIn | GitHub
+---
 
-Built with passion and deep engineering focus as part of an advanced AI integration elective.
+## 🛡️ Security & Error Handling
+
+- **HttpOnly, SameSite Cookies:** JWTs are never exposed to client-side JavaScript.
+- **Role-Based Access Control (RBAC):** Centralized route protection (`authorize('admin', 'student')`) with redundant defense-in-depth controller checks for sensitive data.
+- **Graceful Degradation:** The AI service layer implements **Fallback Mechanisms** and **Auto-Retries**. If third-party AI APIs experience high traffic (503/429 errors), the system falls back to standard workflows without crashing the UI.
+- **Batch-Tolerant Scraping:** Scheduled scraping jobs catch errors per URL, accumulating them into a summary so a single failing website does not abort the entire cron process.
+
+---
+
+## 🚀 Getting Started (Local Development)
+
+### Prerequisites
+* Node.js (v18+)
+* MongoDB Atlas Cluster
+* Google Gemini API Key
+* *Note: You must manually create two Atlas Vector Search Indexes in your MongoDB cluster (`vector_index` for Courses, and `chatbot_vector_index` for UniversityData).*
+
+### Installation
+
+1. **Clone the repository**
+   ~~~bash
+   git clone <repository-url>
+   cd <repository-folder>
+   ~~~
+
+2. **Backend Setup**
+   ~~~bash
+   cd backend
+   npm install
+   ~~~
+   *Create a `.env` file in the `backend` directory:*
+   ~~~env
+   PORT=3000
+   MONGODB_URI=your-mongodb-atlas-uri
+   JWT_SECRET=your-jwt-secret
+   GEMINI_API_KEY=your-gemini-api-key
+   NODE_ENV=development
+   ~~~
+   *Start the server:*
+   ~~~bash
+   npm run dev
+   ~~~
+
+3. **Frontend Setup**
+   ~~~bash
+   cd ../frontend
+   npm install
+   npm run dev
+   ~~~
+
+---
+
+## 👤 Author
+
+**Nawras Alkhrissat** — *Software Engineer | CS Student at GJU / HSB*
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/nawras-alkhrissat-70ab04303)
+
+*Built with passion and deep engineering focus as part of an advanced AI integration elective.*
